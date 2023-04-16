@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"math/rand"
 	"time"
 )
 
@@ -13,10 +14,13 @@ type Block struct {
 	Data      string
 	Hash      string
 	PrevHash  string
+	Nonce     int
 }
 
+const Difficulty = 3
+
 func calculateHash(block Block) string {
-	record := string(block.Index) + block.Timestamp.String() + block.Data + block.PrevHash
+	record := string(block.Index) + block.Timestamp.String() + block.Data + block.PrevHash + string(block.Nonce)
 	h := sha256.New()
 	h.Write([]byte(record))
 	hashed := h.Sum(nil)
@@ -29,8 +33,25 @@ func generateBlock(prevBlock Block, data string) Block {
 	newBlock.Timestamp = time.Now().UTC()
 	newBlock.Data = data
 	newBlock.PrevHash = prevBlock.Hash
-	newBlock.Hash = calculateHash(newBlock)
+
+	for {
+		newBlock.Nonce = rand.Intn(100000000)
+		newBlock.Hash = calculateHash(newBlock)
+		if isValidHash(newBlock.Hash) {
+			break
+		}
+	}
+
 	return newBlock
+}
+
+func isValidHash(hash string) bool {
+	for i := 0; i < Difficulty; i++ {
+		if hash[i] != '0' {
+			return false
+		}
+	}
+	return true
 }
 
 func isBlockValid(newBlock, prevBlock Block) bool {
@@ -43,11 +64,14 @@ func isBlockValid(newBlock, prevBlock Block) bool {
 	if calculateHash(newBlock) != newBlock.Hash {
 		return false
 	}
+	if !isValidHash(newBlock.Hash) {
+		return false
+	}
 	return true
 }
 
 func main() {
-	genesisBlock := Block{0, time.Now().UTC(), "Genesis Block", "", ""}
+	genesisBlock := Block{0, time.Now().UTC(), "Genesis Block", "", "", 0}
 	genesisBlock.Hash = calculateHash(genesisBlock)
 	blockchain := []Block{genesisBlock}
 
