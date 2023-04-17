@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -26,7 +27,7 @@ type Block struct {
 const Difficulty = 3
 
 func calculateHash(block Block) string {
-	record := string(block.Index) + block.Timestamp.String() + fmt.Sprintf("%v", block.Transactions) + block.PrevHash + string(block.Nonce)
+	record := strconv.Itoa(block.Index) + block.Timestamp.String() + fmt.Sprintf("%v", block.Transactions) + block.PrevHash + strconv.Itoa(block.Nonce)
 	h := sha256.New()
 	h.Write([]byte(record))
 	hashed := h.Sum(nil)
@@ -107,8 +108,8 @@ func main() {
 	blockchain := []Block{genesisBlock}
 
 	transactions1 := []Transaction{
-		Transaction{"sender1", "receiver1", 10.0},
-		Transaction{"sender2", "receiver2", 5.0},
+		{"sender1", "receiver1", 10.0},
+		{"sender2", "receiver2", 5.0},
 	}
 	block1 := generateBlock(blockchain[0], transactions1)
 	if isBlockValid(block1, blockchain[0]) {
@@ -116,8 +117,8 @@ func main() {
 	}
 
 	transactions2 := []Transaction{
-		Transaction{"sender1", "receiver3", 7.0},
-		Transaction{"sender3", "receiver2", 3.0},
+		{"sender1", "receiver3", 7.0},
+		{"sender3", "receiver2", 3.0},
 	}
 	block2 := generateBlock(blockchain[1], transactions2)
 	if isBlockValid(block2, blockchain[1]) {
