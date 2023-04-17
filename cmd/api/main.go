@@ -8,30 +8,36 @@ import (
 	"time"
 )
 
+type Transaction struct {
+	Sender   string
+	Receiver string
+	Amount   float64
+}
+
 type Block struct {
-	Index     int
-	Timestamp time.Time
-	Data      string
-	Hash      string
-	PrevHash  string
-	Nonce     int
+	Index        int
+	Timestamp    time.Time
+	Transactions []Transaction
+	Hash         string
+	PrevHash     string
+	Nonce        int
 }
 
 const Difficulty = 3
 
 func calculateHash(block Block) string {
-	record := string(block.Index) + block.Timestamp.String() + block.Data + block.PrevHash + string(block.Nonce)
+	record := string(block.Index) + block.Timestamp.String() + fmt.Sprintf("%v", block.Transactions) + block.PrevHash + string(block.Nonce)
 	h := sha256.New()
 	h.Write([]byte(record))
 	hashed := h.Sum(nil)
 	return hex.EncodeToString(hashed)
 }
 
-func generateBlock(prevBlock Block, data string) Block {
+func generateBlock(prevBlock Block, transactions []Transaction) Block {
 	var newBlock Block
 	newBlock.Index = prevBlock.Index + 1
 	newBlock.Timestamp = time.Now().UTC()
-	newBlock.Data = data
+	newBlock.Transactions = transactions
 	newBlock.PrevHash = prevBlock.Hash
 
 	for {
@@ -69,20 +75,70 @@ func isBlockValid(newBlock, prevBlock Block) bool {
 	}
 	return true
 }
+func isTransactionValid(transaction Transaction, balanceMap map[string]float64) bool {
+	if balanceMap[transaction.Sender] < transaction.Amount {
+		return false
+	}
+	return true
+}
+func resolveConflicts(chain1, chain2 []Block) []Block {
+	if len(chain1) > len(chain2) {
+		return chain1
+	} else if len(chain1) < len(chain2) {
+		return chain2
+	} else {
+
+		if chain1[len(chain1)-1].Hash == chain2[len(chain2)-1].Hash {
+			return chain1
+		} else {
+
+			if chain1[len(chain1)-1].Nonce > chain2[len(chain2)-1].Nonce {
+				return chain1
+			} else {
+				return chain2
+			}
+		}
+	}
+}
 
 func main() {
-	genesisBlock := Block{0, time.Now().UTC(), "Genesis Block", "", "", 0}
+	genesisBlock := Block{0, time.Now().UTC(), []Transaction{}, "", "", 0}
 	genesisBlock.Hash = calculateHash(genesisBlock)
 	blockchain := []Block{genesisBlock}
 
-	block1 := generateBlock(blockchain[0], "Block 1")
+	transactions1 := []Transaction{
+		Transaction{"sender1", "receiver1", 10.0},
+		Transaction{"sender2", "receiver2", 5.0},
+	}
+	block1 := generateBlock(blockchain[0], transactions1)
 	if isBlockValid(block1, blockchain[0]) {
 		blockchain = append(blockchain, block1)
 	}
-	block2 := generateBlock(blockchain[1], "Block 2")
+
+	transactions2 := []Transaction{
+		Transaction{"sender1", "receiver3", 7.0},
+		Transaction{"sender3", "receiver2", 3.0},
+	}
+	block2 := generateBlock(blockchain[1], transactions2)
 	if isBlockValid(block2, blockchain[1]) {
 		blockchain = append(blockchain, block2)
 	}
 
 	fmt.Println(blockchain)
+
+	balanceMap := map[string]float64{
+		"sender1": 20.0,
+		"sender2": 10.0,
+	}
+	transaction := Transaction{"sender1", "receiver1", 5.0}
+	if isTransactionValid(transaction, balanceMap) {
+		fmt.Println("Transaction is valid")
+	} else {
+		fmt.Println("Transaction is invalid")
+	}
+
+	chain1 := []Block{genesisBlock, block1}
+	chain2 := []Block{genesisBlock, block2}
+	newChain := resolveConflicts(chain1, chain2)
+	fmt.Println(newChain)
 }
