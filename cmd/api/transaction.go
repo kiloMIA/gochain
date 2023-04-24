@@ -14,6 +14,18 @@ type Transaction struct {
 	HashValue string      `json:"hashvalue"`
 	Detail    interface{} `json:"detail"`
 }
+type TypeAA01 struct {
+	Foo string `json:"foo"`
+	Bar string `json:"bar"`
+}
+
+type TypeAA04 struct {
+	Baz string `json:"baz"`
+}
+
+type TypeAA05 struct {
+	Qux string `json:"qux"`
+}
 
 func handleTransaction(tx Transaction) {
 	txType := tx.HashValue[:4]
