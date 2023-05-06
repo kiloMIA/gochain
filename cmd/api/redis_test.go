@@ -45,7 +45,6 @@ func TestNewRedisClient(t *testing.T) {
 		})
 	}
 
-	// Test using the client
 	client, err := NewRedisClient("localhost:6379", "", 0)
 	if err != nil {
 		t.Errorf("failed to create Redis client: %s", err)

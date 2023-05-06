@@ -15,8 +15,9 @@ type Transaction struct {
 	Detail    interface{} `json:"detail"`
 }
 type TypeAA01 struct {
-	Foo string `json:"foo"`
-	Bar string `json:"bar"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+	Deadline  float64 `json:"deadline"`
 }
 
 type TypeAA04 struct {
