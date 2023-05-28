@@ -1,0 +1,55 @@
+syntax = "proto3";
+package proto;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+option go_package = "proto/smartcontract";
+
+message SmartContract {
+  string Hashvalue = 1;
+  google.protobuf.Timestamp Timestamp = 2;
+  string Pubkey = 3;
+  google.protobuf.Any Payload = 4;
+}
+
+message SC01 {
+  int32 Temperature = 1;
+}
+
+message NodeIdentifier {
+  string NodeID = 1;
+}
+
+message ProposeContractRequest {
+  SmartContract Contract = 1;
+}
+
+message ProposeContractResponse {
+  bool Accepted = 1;
+}
+
+message ValidateContractRequest {
+  SmartContract Contract = 1;
+}
+
+message ValidateContractResponse {
+  bool Valid = 1;
+}
+
+message ConsensusRequest {
+  NodeIdentifier NodeID = 1;
+  SmartContract Contract = 2;
+}
+
+message ConsensusResponse {
+  bool Agreed = 1;
+}
+
+service NodeService {
+  rpc ProposeContract(ProposeContractRequest) returns (ProposeContractResponse);
+  rpc ValidateContract(ValidateContractRequest) returns (ValidateContractResponse);
+  rpc AchieveConsensus(ConsensusRequest) returns (ConsensusResponse);
+}
+
+
